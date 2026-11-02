@@ -45,15 +45,14 @@ class _C {
   static const text      = Color(0xFFF0F0F0); 
   static const textSub   = Color(0xFFA0A0B0); 
   static const textDim   = Color(0xFF505060); 
-}
 
+  // Ini harus di dalam class
   static const LinearGradient metalGrad = LinearGradient(
-    colors: [steel, blueMid, blueLight],
+    colors: [blueMid, blueLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 }
-
 // ─── Tool Category Data ───────────────────────────────────────────────────────
 class _ToolCategory {
   final String id;
