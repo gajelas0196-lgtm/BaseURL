@@ -154,27 +154,33 @@ class _BugSenderPageState extends State<BugSenderPage>
   }
 
   Future<void> _addSender(String number) async {
-    setState(() => isLoading = true);
-    try {
-      final res = await http.get(Uri.parse(
-          "$baseUrl/getPairing?key=${widget.sessionKey}&number=$number"));
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        if (data["valid"] == true) {
-          _showPairingCodeDialog(number, data['pairingCode']);
-        } else {
-          _toast(data['message'] ?? "Failed to generate pairing code", error: true);
-        }
+  setState(() => isLoading = true);
+  try {
+    final res = await http.get(
+      Uri.parse("$baseUrl/getPairing?key=${widget.sessionKey}&number=$number"),
+    ).timeout(const Duration(seconds: 30)); // ✅ TAMBAHKAN TIMEOUT DI SINI
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data["valid"] == true) {
+        // Tampilkan dialog kode pairing
+        _showPairingCodeDialog(number, data['pairingCode']);
       } else {
-        _toast("Server error: ${res.statusCode}", error: true);
+        _toast(data['message'] ?? "Failed to generate pairing code", error: true);
       }
-    } catch (_) {
-      _toast("Connection failed", error: true);
-    } finally {
-      setState(() => isLoading = false);
-      _fetchSenders();
+    } else if (res.statusCode == 429) {
+       _toast("Server sedang sibuk, tunggu 30 detik.", error: true);
+    } else {
+      _toast("Server error: ${res.statusCode}", error: true);
     }
+  } catch (e) {
+    // Menangkap error timeout jika server tidak merespon dalam 30 detik
+    _toast("Koneksi Timeout / Server Lambat. Coba lagi.", error: true);
+  } finally {
+    setState(() => isLoading = false);
+    _fetchSenders();
   }
+}
 
   Future<void> _deleteSender(String senderId) async {
     setState(() => isLoading = true);
